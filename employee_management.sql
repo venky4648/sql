@@ -17,15 +17,9 @@ select * from Employees;
 -- drop table Users;
 -- drop table Salary;
 
-
-
--- create Department table
-
 create table Department(dept_id INT primary key auto_increment,
 dep_name varchar(255) NOT NULL,
 dep_description varchar(255) NOT NULL);
-
--- create Users table
 
 CREATE TABLE Users(
 user_id int primary key auto_increment,
@@ -35,8 +29,6 @@ password varchar(255) not null,
 role  enum ('admin','employee') not null,
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
-
--- create Employees table
 
 create table Employees(
 emp_id int unique auto_increment,
@@ -55,7 +47,7 @@ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
 
 
--- create leaves table
+
 CREATE TABLE leaves (
     leave_id INT PRIMARY KEY AUTO_INCREMENT,
 
@@ -75,8 +67,6 @@ CREATE TABLE leaves (
 
     FOREIGN KEY (employeeId) REFERENCES Employees(employeeId)
 );
-
--- create Salary table
 
 CREATE TABLE Salary (
     salary_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -99,7 +89,7 @@ CREATE TABLE Salary (
 );
 
 
---insert data into the tables
+
 
 INSERT INTO Department (dep_name, dep_description)
 VALUES 
@@ -121,14 +111,12 @@ VALUES
 (1, "emp001", '1998-05-12', 'male', 'single', 1, 'Software Developer', 50000.00),
 (2, "emp002", '1997-09-20', 'female', 'married', 2, 'HR Executive', 40000.00);
 
-
+select * from Employees;
 
 -- delete the data in the table
 delete  from  Employees
 where employeeId is null;
 
-
--- delete the null values in the table
 SET SQL_SAFE_UPDATES = 0;
 
 DELETE FROM Employees
@@ -144,8 +132,6 @@ JOIN Employees e2
 ON e1.employeeId = e2.employeeId
 AND e1.emp_id > e2.emp_id;
 
-
---insert data into leaves table and Salary table
 INSERT INTO leaves (
     employeeId,
     leave_type,
@@ -172,3 +158,133 @@ INSERT INTO Salary (
 VALUES
 ('emp001', 50000, 5000, 2000, 53000, '2025-06-30'),
 ('emp002', 40000, 4000, 1500, 42500, '2025-06-30');
+
+
+-- Retrieve all employees along with their department names.
+select e.employeeId,d.dep_name from Employees e join Department d on d.dept_id=e.department;
+
+-- Display employee name, email, and role
+select name, email, role from Users;
+
+
+-- Get all employees who belong to the 'IT' department.
+select e.employeeId from Employees e join Department d on e.department=d.dept_id 
+where d.dep_name='IT';
+
+
+-- Fetch all leave records for a specific employee (e.g., emp001)
+select * from leaves where employeeId='emp001';
+
+-- Find all employees with a salary greater than 40,000.
+select employeeId,salary from Employees where salary >40000;
+
+
+-- Retrieve employee details along with their leave status.
+select e.employeeId, l.status from Employees e join leaves l on e.employeeId = l.employeeId;
+
+
+-- Count the number of employees in each department.
+select d.dep_name,count(employeeId) as employee_count from Department d left join  Employees e on  d.dept_id=e.department
+group by dep_name;
+
+-- Calculate the total salary paid to all employees.
+select sum(salary) as total from Employees ;
+
+-- Find employees who are currently on leave (based on current date).
+SELECT e.employeeId, u.name, l.leave_type, l.start_date, l.end_date
+FROM Employees e
+JOIN leaves l ON e.employeeId = l.employeeId
+JOIN Users u ON e.user_id = u.user_id
+WHERE CURDATE() BETWEEN l.start_date AND l.end_date And l.status='Approved';
+
+
+-- List employees who have not taken any leave. 
+select e.employeeId from Employees e join leaves l on e.employeeId=l.employeeId
+where l.employeeId  is null;
+
+## 🔹 Advanced Queries
+
+-- 11. Find the highest paid employee.
+select u.name ,e.salary from Users u join Employees e on u.user_id=e.user_id
+order by e.salary DESC
+limit 1;
+
+-- 12. Retrieve the second highest salary.
+select u.name ,e.salary from Users u join Employees e on u.user_id=e.user_id
+order by e.salary DESC
+limit 1 offset 1;
+
+select * from Department;
+select * from Employees;
+-- 13. Identify the department with the highest number of employees.
+select dep_name from Department d  join Employees e on e.department = d.dept_id
+group by dep_name
+order by count(employeeId) desc
+limit 1;
+
+-- 14. Get employee details along with their most recent leave record.
+SELECT e.employeeId, u.name, l.leave_type, l.start_date, l.end_date
+FROM Employees e
+JOIN Users u ON e.user_id = u.user_id
+JOIN leaves l ON e.employeeId = l.employeeId
+WHERE l.end_date = (
+    SELECT MAX(l2.end_date)
+    FROM leaves l2
+    WHERE l2.employeeId = e.employeeId
+);
+
+-- 15. Calculate net salary using (basic_salary + allowances - deductions).
+
+-- 16. Find employees who have taken more than 2 leaves.
+
+
+-- 17. List employees whose salary is above the average salary of their department.
+
+-- 18. Calculate the total monthly salary expense.
+
+-- 19. Retrieve employee details with their role and department name.
+
+-- 20. Detect duplicate employee records based on employeeId.
+
+-- ---
+
+-- ## 🔹 Real-World Scenario Queries
+
+-- 21. Identify the employee who has taken the most leaves.
+
+-- 22. Determine which department has the highest salary expense.
+
+-- 23. List employees who have not received any salary records.
+
+-- 24. Retrieve employees who joined in the last 30 days.
+
+-- 25. Calculate leave approval statistics (Approved vs Rejected).
+
+-- ---
+
+## 🔹 Dashboard Queries
+
+-- 26. Get total number of employees.
+select distinct count(*) from Employees;
+
+-- 27. Get total number of departments.
+select count(*) from Department;
+-- 28. Get total number of leaves.
+select count(*) from leaves;
+
+
+
+-- 29. Get total salary paid.
+
+select sum(salary) from Employees;
+
+
+
+-- 30. Build a full employee profile combining Users, Employees, Department, Salary, and Leaves tables.
+SELECT e.employeeId, u.name, u.email, d.dep_name,
+       s.net_salary, l.leave_type, l.status
+FROM Employees e
+JOIN Users u ON e.user_id = u.user_id
+JOIN Department d ON e.department = d.dept_id
+LEFT JOIN Salary s ON e.employeeId = s.employeeId
+LEFT JOIN leaves l ON e.employeeId = l.employeeId;
