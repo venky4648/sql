@@ -232,33 +232,63 @@ WHERE l.end_date = (
     FROM leaves l2
     WHERE l2.employeeId = e.employeeId
 );
-
+select * from salary;
 -- 15. Calculate net salary using (basic_salary + allowances - deductions).
 
+select * from leaves;
 -- 16. Find employees who have taken more than 2 leaves.
+select employeeId from leaves 
+WHERE status ='Approved'
+group by employeeId
+having count(*)>2;
 
-
+select *  from salary;
+select * from  Employees;
 -- 17. List employees whose salary is above the average salary of their department.
+select e.employeeId,u.name,u.role from Employees e join Users u on e.user_id=u.user_id
+where e.salary > (select avg(e2.salary) from Employees e2 where e2.department=e.department);
+
 
 -- 18. Calculate the total monthly salary expense.
+SELECT MONTH(pay_date) AS month, SUM(net_salary) AS total_expense
+FROM Salary
+GROUP BY MONTH(pay_date);
 
 -- 19. Retrieve employee details with their role and department name.
+select e.* ,u.role,d.dep_name from Employees e join Users u on u.user_id=e.user_id
+join Department d on e.department = d.dept_id;
 
 -- 20. Detect duplicate employee records based on employeeId.
+
+select Employees.* from Employees 
+group by employeeId
+having count(*) >1;
+
 
 -- ---
 
 -- ## 🔹 Real-World Scenario Queries
-
+select * from leaves;
 -- 21. Identify the employee who has taken the most leaves.
+select employeeId,count(*) as total  from leaves group by employeeId order by total desc limit 1;
+
 
 -- 22. Determine which department has the highest salary expense.
-
+select * from salary;
+select * from Employees;
+select * from  Users;
 -- 23. List employees who have not received any salary records.
-
+select employeeId from Employees where employeeId not in (select employeeId from salary);
 -- 24. Retrieve employees who joined in the last 30 days.
+SELECT *
+FROM Employees
+WHERE created_at >= CURDATE() - INTERVAL 30 DAY;
+
 
 -- 25. Calculate leave approval statistics (Approved vs Rejected).
+SELECT status, COUNT(*) AS total
+FROM leaves
+GROUP BY status;
 
 -- ---
 
